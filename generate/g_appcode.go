@@ -23,11 +23,11 @@ import (
 	"regexp"
 	"strings"
 
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	beeLogger "github.com/ranqiwu/bee/logger"
 	"github.com/ranqiwu/bee/logger/colors"
 	"github.com/ranqiwu/bee/utils"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
 )
 
 const (
@@ -945,7 +945,7 @@ func getFileName(tbName string) (filename string) {
 	return
 }
 
-func getPackagePath(curpath string) (packpath string) {
+func getPackagePath(curpath string) string {
 	gopath := os.Getenv("GOPATH")
 	if gopath == "" {
 		beeLogger.Log.Fatal("GOPATH environment variable is not set or empty")
@@ -953,29 +953,8 @@ func getPackagePath(curpath string) (packpath string) {
 
 	beeLogger.Log.Debugf("GOPATH: %s", utils.FILE(), utils.LINE(), gopath)
 
-	appsrcpath := ""
-	haspath := false
-	wgopath := filepath.SplitList(gopath)
-
-	for _, wg := range wgopath {
-		wg, _ = filepath.EvalSymlinks(filepath.Join(wg, "src"))
-		if strings.HasPrefix(strings.ToLower(curpath), strings.ToLower(wg)) {
-			haspath = true
-			appsrcpath = wg
-			break
-		}
-	}
-
-	if !haspath {
-		beeLogger.Log.Fatalf("Cannot generate application code outside of GOPATH '%s' compare with CWD '%s'", gopath, curpath)
-	}
-
-	if curpath == appsrcpath {
-		beeLogger.Log.Fatal("Cannot generate application code outside of application path")
-	}
-
-	packpath = strings.Join(strings.Split(curpath[len(appsrcpath)+1:], string(filepath.Separator)), "/")
-	return
+	paths := strings.Split(curpath, "\\")
+	return paths[len(paths)-1]
 }
 
 const (
