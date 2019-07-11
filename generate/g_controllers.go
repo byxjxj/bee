@@ -20,9 +20,9 @@ import (
 	"path"
 	"strings"
 
-	beeLogger "github.com/beego/bee/logger"
-	"github.com/beego/bee/logger/colors"
-	"github.com/beego/bee/utils"
+	beeLogger "github.com/ranqiwu/bee/logger"
+	"github.com/ranqiwu/bee/logger/colors"
+	"github.com/ranqiwu/bee/utils"
 )
 
 func GenerateController(cname, currpath string) {
