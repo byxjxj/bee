@@ -326,7 +326,7 @@ func CheckEnv(appname string) (apppath, packpath string, err error) {
 
 	gosrcpath := filepath.Join(gopath, "src")
 	apppath = filepath.Join(gosrcpath, appname) */
-	gosrcpath := filepath.Join(currpath, "src")
+	gosrcpath := currpath
 	apppath = filepath.Join(gosrcpath, appname)
 
 	if _, e := os.Stat(apppath); !os.IsNotExist(e) {
