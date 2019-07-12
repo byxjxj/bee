@@ -71,7 +71,7 @@ var apiMaingo = `package main
 import (
 	_ "{{.Appname}}/routers"
 
-	"github.com/astaxie/beego"
+	"github.com/ranqiwu/beego"
 )
 
 func main() {
@@ -88,8 +88,8 @@ var apiMainconngo = `package main
 import (
 	_ "{{.Appname}}/routers"
 
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/orm"
+	"github.com/ranqiwu/beego"
+	"github.com/ranqiwu/beego/orm"
 	{{.DriverPkg}}
 )
 
@@ -119,7 +119,7 @@ package routers
 import (
 	"{{.Appname}}/controllers"
 
-	"github.com/astaxie/beego"
+	"github.com/ranqiwu/beego"
 )
 
 func init() {
@@ -288,7 +288,7 @@ import (
 	"{{.Appname}}/models"
 	"encoding/json"
 
-	"github.com/astaxie/beego"
+	"github.com/ranqiwu/beego"
 )
 
 // Operations about object
@@ -381,7 +381,7 @@ import (
 	"{{.Appname}}/models"
 	"encoding/json"
 
-	"github.com/astaxie/beego"
+	"github.com/ranqiwu/beego"
 )
 
 // Operations about Users
@@ -506,7 +506,7 @@ import (
 	"path/filepath"
 	_ "{{.Appname}}/routers"
 
-	"github.com/astaxie/beego"
+	"github.com/ranqiwu/beego"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
