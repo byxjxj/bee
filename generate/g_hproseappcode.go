@@ -24,11 +24,11 @@ import (
 	"path"
 	"strings"
 
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	beeLogger "github.com/ranqiwu/bee/logger"
 	"github.com/ranqiwu/bee/logger/colors"
 	"github.com/ranqiwu/bee/utils"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
 )
 
 var Hproseconf = `appname = {{.Appname}}
@@ -450,7 +450,7 @@ func Get{{modelName}}ById(id int) (v *{{modelName}}, err error) {
 // GetAll{{modelName}} retrieves all {{modelName}} matches certain condition. Returns empty list if
 // no records exist
 func GetAll{{modelName}}(query map[string]string, fields []string, sortby []string, order []string,
-	offset int64, limit int64) (ml []interface{}, err error) {
+	offset int64, limit int64) (interface{}, err error) {
 	o := orm.NewOrm()
 	qs := o.QueryTable(new({{modelName}}))
 	// query k=v
@@ -498,12 +498,20 @@ func GetAll{{modelName}}(query map[string]string, fields []string, sortby []stri
 		}
 	}
 
+	result := make(map[string]interface{})
+	if i, ex := qs.Count(); ex != nil {
+		return nil, errors.New("Error: get total record failed")
+	} else {
+		result["TotalRecord"] = i
+	}
+
 	var l []{{modelName}}
-	qs = qs.OrderBy(sortFields...)
+	qs = qs.OrderBy(sortFields...).RelatedSel()
 	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
+		var list []interface{}
 		if len(fields) == 0 {
 			for _, v := range l {
-				ml = append(ml, v)
+				list = append(list, v)
 			}
 		} else {
 			// trim unused fields
@@ -513,12 +521,14 @@ func GetAll{{modelName}}(query map[string]string, fields []string, sortby []stri
 				for _, fname := range fields {
 					m[fname] = val.FieldByName(fname).Interface()
 				}
-				ml = append(ml, m)
+				list = append(list, m)
 			}
 		}
-		return ml, nil
+		result["List"] = list
+		return result, nil
+	}else {
+		return nil, err
 	}
-	return nil, err
 }
 
 // Update{{modelName}} updates {{modelName}} by Id and returns error if
