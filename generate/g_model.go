@@ -145,7 +145,7 @@ import (
 	"reflect"
 	"strings"
 	{{timePkg}}
-	"github.com/ranqiwu/beego/orm"
+	"github.com/ranqiwu/beego_/orm"
 )
 
 {{modelStruct}}

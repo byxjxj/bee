@@ -355,8 +355,8 @@ const (
 import(
 	"os"
 
-	"github.com/ranqiwu/beego/orm"
-	"github.com/ranqiwu/beego/migration"
+	"github.com/ranqiwu/beego_/orm"
+	"github.com/ranqiwu/beego_/migration"
 
 	_ "{{DriverRepo}}"
 )

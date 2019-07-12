@@ -159,7 +159,7 @@ func GetBeegoVersion() string {
 		}
 
 	}
-	return "Beego is not installed. Please do consider installing it first: https://github.com/ranqiwu/beego"
+	return "Beego is not installed. Please do consider installing it first: https://github.com/ranqiwu/beego_"
 }
 
 func GetGoVersion() string {

@@ -971,7 +971,7 @@ import (
 	"reflect"
 	"strings"
 	{{timePkg}}
-	"github.com/ranqiwu/beego/orm"
+	"github.com/ranqiwu/beego_/orm"
 )
 
 {{modelStruct}}
@@ -1120,7 +1120,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ranqiwu/beego"
+	"github.com/ranqiwu/beego_"
 )
 
 // {{ctrlName}}Controller operations for {{ctrlName}}
@@ -1295,7 +1295,7 @@ package routers
 import (
 	"{{pkgPath}}/controllers"
 
-	"github.com/ranqiwu/beego"
+	"github.com/ranqiwu/beego_"
 )
 
 func init() {
