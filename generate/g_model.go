@@ -230,6 +230,7 @@ func GetAll{{modelName}}(query map[string]string, fields []string, sortby []stri
 	} else {
 		result["TotalRecord"] = i
 	}
+	
 	var l []{{modelName}}
 	qs = qs.OrderBy(sortFields...).RelatedSel()
 	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
