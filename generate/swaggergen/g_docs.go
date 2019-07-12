@@ -428,7 +428,7 @@ func analyseControllerPkg(vendorPath, localName, pkgpath string) {
 	if isSystemPackage(pkgpath) {
 		return
 	}
-	if pkgpath == beego "github.com/ranqiwu/beego_" {
+	if pkgpath == "github.com/ranqiwu/beego_" {
 		return
 	}
 	if localName != "" {
