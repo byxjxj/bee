@@ -66,7 +66,7 @@ var maingo = `package main
 
 import (
 	_ "{{.Appname}}/routers"
-	"github.com/ranqiwu/beego_"
+	beego "github.com/ranqiwu/beego_"
 )
 
 func main() {
@@ -78,7 +78,7 @@ var router = `package routers
 
 import (
 	"{{.Appname}}/controllers"
-	"github.com/ranqiwu/beego_"
+	beego "github.com/ranqiwu/beego_"
 )
 
 func init() {
@@ -96,7 +96,7 @@ import (
 	"path/filepath"
 	_ "{{.Appname}}/routers"
 
-	"github.com/ranqiwu/beego_"
+	beego "github.com/ranqiwu/beego_"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -134,7 +134,7 @@ func TestBeego(t *testing.T) {
 var controllers = `package controllers
 
 import (
-	"github.com/ranqiwu/beego_"
+	beego "github.com/ranqiwu/beego_"
 )
 
 type MainController struct {

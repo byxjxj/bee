@@ -1120,7 +1120,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ranqiwu/beego_"
+	beego "github.com/ranqiwu/beego_"
 )
 
 // {{ctrlName}}Controller operations for {{ctrlName}}
@@ -1295,7 +1295,7 @@ package routers
 import (
 	"{{pkgPath}}/controllers"
 
-	"github.com/ranqiwu/beego_"
+	beego "github.com/ranqiwu/beego_"
 )
 
 func init() {

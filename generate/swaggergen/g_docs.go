@@ -34,10 +34,10 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/ranqiwu/beego_/swagger"
-	"github.com/ranqiwu/beego_/utils"
 	beeLogger "github.com/ranqiwu/bee/logger"
 	bu "github.com/ranqiwu/bee/utils"
+	"github.com/ranqiwu/beego_/swagger"
+	"github.com/ranqiwu/beego_/utils"
 )
 
 const (
