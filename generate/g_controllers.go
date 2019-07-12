@@ -78,7 +78,7 @@ func GenerateController(cname, currpath string) {
 var controllerTpl = `package {{packageName}}
 
 import (
-	"github.com/ranqiwu/beego_"
+	beego "github.com/ranqiwu/beego_"
 )
 
 // {{controllerName}}Controller operations for {{controllerName}}
@@ -166,7 +166,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ranqiwu/beego_"
+	beego "github.com/ranqiwu/beego_"
 )
 
 //  {{controllerName}}Controller operations for {{controllerName}}

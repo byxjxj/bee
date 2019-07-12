@@ -57,7 +57,7 @@ Prints the current Bee, Beego and Go version alongside the platform information.
 }
 var outputFormat string
 
-const version = "1.12.7"
+const version = "1.12.8"
 
 func init() {
 	fs := flag.NewFlagSet("version", flag.ContinueOnError)
@@ -128,7 +128,7 @@ func GetBeegoVersion() string {
 		return ""
 	}
 	for _, wg := range wgopath {
-		wg, _ = path.EvalSymlinks(path.Join(wg, "src", "github.com", "ranqiwu", "beego"))
+		wg, _ = path.EvalSymlinks(path.Join(wg, "src", "github.com", "ranqiwu", "beego_"))
 		filename := path.Join(wg, "beego.go")
 		_, err := os.Stat(filename)
 		if err != nil {
