@@ -401,7 +401,7 @@ const (
 	// publish about {{modelName}} function
 	service.AddFunction("Add{{modelName}}", models.Add{{modelName}})
 	service.AddFunction("Get{{modelName}}ById", models.Get{{modelName}}ById)
-	service.AddFunction("GetAll{{modelName}}", models.GetAll{{modelName}})
+	service.AddFunction("GetAll{{modelName}}ByPage", models.GetAll{{modelName}}ByPage)
 	service.AddFunction("Update{{modelName}}ById", models.Update{{modelName}}ById)
 	service.AddFunction("Delete{{modelName}}", models.Delete{{modelName}})
 

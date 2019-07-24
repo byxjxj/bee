@@ -1205,7 +1205,7 @@ type {{ctrlName}}Controller struct {
 func (c *{{ctrlName}}Controller) URLMapping() {
 	c.Mapping("Post", c.Post)
 	c.Mapping("GetOne", c.GetOne)
-	c.Mapping("GetAll", c.GetAll)
+	c.Mapping("GetAllByPage", c.GetAllByPage)
 	c.Mapping("Put", c.Put)
 	c.Mapping("Delete", c.Delete)
 }
@@ -1251,8 +1251,8 @@ func (c *{{ctrlName}}Controller) GetOne() {
 	c.ServeJSON()
 }
 
-// GetAll ...
-// @Title Get All
+// GetAllByPage ...
+// @Title Get All By Page
 // @Description get {{ctrlName}}
 // @Param	query	query	string	false	"Filter. e.g. col1:v1,col2:v2 ..."
 // @Param	fields	query	string	false	"Fields returned. e.g. col1,col2 ..."
@@ -1263,7 +1263,7 @@ func (c *{{ctrlName}}Controller) GetOne() {
 // @Success 200 {object} models.{{ctrlName}}
 // @Failure 403
 // @router / [get]
-func (c *{{ctrlName}}Controller) GetAll() {
+func (c *{{ctrlName}}Controller) GetAllByPage() {
 	var fields []string
 	var sortby []string
 	var order []string
@@ -1305,7 +1305,7 @@ func (c *{{ctrlName}}Controller) GetAll() {
 		}
 	}
 
-	l, err := models.GetAll{{ctrlName}}(query, fields, sortby, order, offset, limit)
+	l, err := models.GetAll{{ctrlName}}ByPage(query, fields, sortby, order, offset, limit)
 	if err != nil {
 		c.Data["json"] = err.Error()
 	} else {
