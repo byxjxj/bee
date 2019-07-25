@@ -24,11 +24,11 @@ import (
 	"path"
 	"strings"
 
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	beeLogger "github.com/ranqiwu/bee/logger"
 	"github.com/ranqiwu/bee/logger/colors"
 	"github.com/ranqiwu/bee/utils"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
 )
 
 var Hproseconf = `appname = {{.Appname}}
@@ -401,7 +401,7 @@ const (
 	// publish about {{modelName}} function
 	service.AddFunction("Add{{modelName}}", models.Add{{modelName}})
 	service.AddFunction("Get{{modelName}}ById", models.Get{{modelName}}ById)
-	service.AddFunction("GetAll{{modelName}}", models.GetAll{{modelName}})
+	service.AddFunction("GetAll{{modelName}}ByPage", models.GetAll{{modelName}}ByPage)
 	service.AddFunction("Update{{modelName}}ById", models.Update{{modelName}}ById)
 	service.AddFunction("Delete{{modelName}}", models.Delete{{modelName}})
 
@@ -447,10 +447,10 @@ func Get{{modelName}}ById(id int) (v *{{modelName}}, err error) {
 	return nil, err
 }
 
-// GetAll{{modelName}} retrieves all {{modelName}} matches certain condition. Returns empty list if
+// GetAll{{modelName}}ByPage retrieves all {{modelName}} by page matches certain condition. Returns empty list if
 // no records exist
-func GetAll{{modelName}}(query map[string]string, fields []string, sortby []string, order []string,
-	offset int64, limit int64) (ml []interface{}, err error) {
+func GetAll{{modelName}}ByPage(query map[string]string, fields []string, sortby []string, order []string,
+	offset int64, limit int64) (interface{}, error) {
 	o := orm.NewOrm()
 	qs := o.QueryTable(new({{modelName}}))
 	// query k=v
@@ -498,12 +498,20 @@ func GetAll{{modelName}}(query map[string]string, fields []string, sortby []stri
 		}
 	}
 
+	result := make(map[string]interface{})
+	if i, ex := qs.Count(); ex != nil {
+		return nil, errors.New("Error: get total record failed")
+	} else {
+		result["TotalRecord"] = i
+	}
+
 	var l []{{modelName}}
-	qs = qs.OrderBy(sortFields...)
-	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
+	qs = qs.OrderBy(sortFields...).RelatedSel()
+	if _, err := qs.Limit(limit, offset).All(&l, fields...); err == nil {
+		var list []interface{}
 		if len(fields) == 0 {
 			for _, v := range l {
-				ml = append(ml, v)
+				list = append(list, v)
 			}
 		} else {
 			// trim unused fields
@@ -513,12 +521,77 @@ func GetAll{{modelName}}(query map[string]string, fields []string, sortby []stri
 				for _, fname := range fields {
 					m[fname] = val.FieldByName(fname).Interface()
 				}
-				ml = append(ml, m)
+				list = append(list, m)
 			}
 		}
-		return ml, nil
+		result["List"] = list
+		return result, nil
+	}else {
+		return nil, err
 	}
-	return nil, err
+}
+
+// GetAll{{modelName}} retrieves all {{modelName}} matches certain condition. Returns empty list if
+// no records exist
+func GetAll{{modelName}}(query map[string]string,sortby []string, order []string) (list []{{modelName}},err error) {
+	o := orm.NewOrm()
+	qs := o.QueryTable(new({{modelName}}))
+	// query k=v
+	for k, v := range query {
+		// rewrite dot-notation to Object__Attribute
+		k = strings.Replace(k, ".", "__", -1)
+		if strings.Contains(k, "isnull") {
+			qs = qs.Filter(k, (v == "true" || v == "1"))
+		} else {
+			qs = qs.Filter(k, v)
+		}
+	}
+	// order by:
+	var sortFields []string
+	if len(sortby) != 0 {
+		if len(sortby) == len(order) {
+			// 1) for each sort field, there is an associated order
+			for i, v := range sortby {
+				orderby := ""
+				if order[i] == "desc" {
+					orderby = "-" + v
+				} else if order[i] == "asc" {
+					orderby = v
+				} else {
+					return nil, errors.New("Error: Invalid order. Must be either [asc|desc]")
+				}
+				sortFields = append(sortFields, orderby)
+			}
+			qs = qs.OrderBy(sortFields...)
+		} else if len(sortby) != len(order) && len(order) == 1 {
+			// 2) there is exactly one order, all the sorted fields will be sorted by this order
+			for _, v := range sortby {
+				orderby := ""
+				if order[0] == "desc" {
+					orderby = "-" + v
+				} else if order[0] == "asc" {
+					orderby = v
+				} else {
+					return nil, errors.New("Error: Invalid order. Must be either [asc|desc]")
+				}
+				sortFields = append(sortFields, orderby)
+			}
+		} else if len(sortby) != len(order) && len(order) != 1 {
+			return nil, errors.New("Error: 'sortby', 'order' sizes mismatch or 'order' size is not 1")
+		}
+	} else {
+		if len(order) != 0 {
+			return nil, errors.New("Error: unused 'order' fields")
+		}
+	}
+
+	qs = qs.OrderBy(sortFields...).RelatedSel()
+
+	if _, err = qs.All(&list); err == nil {
+		return list, nil
+	} else {
+		return nil, err
+	}
 }
 
 // Update{{modelName}} updates {{modelName}} by Id and returns error if

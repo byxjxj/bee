@@ -1003,10 +1003,10 @@ func Get{{modelName}}ById(id int) (v *{{modelName}}, err error) {
 	return nil, err
 }
 
-// GetAll{{modelName}} retrieves all {{modelName}} matches certain condition. Returns empty list if
+// GetAll{{modelName}}ByPage retrieves all {{modelName}} by page matches certain condition. Returns empty list if
 // no records exist
-func GetAll{{modelName}}(query map[string]string, fields []string, sortby []string, order []string,
-	offset int64, limit int64) (ml []interface{}, err error) {
+func GetAll{{modelName}}ByPage(query map[string]string, fields []string, sortby []string, order []string,
+	offset int64, limit int64) (interface{}, error) {
 	o := orm.NewOrm()
 	qs := o.QueryTable(new({{modelName}}))
 	// query k=v
@@ -1058,12 +1058,20 @@ func GetAll{{modelName}}(query map[string]string, fields []string, sortby []stri
 		}
 	}
 
+	result := make(map[string]interface{})
+	if i, ex := qs.Count(); ex != nil {
+		return nil, errors.New("Error: get total record failed")
+	} else {
+		result["TotalRecord"] = i
+	}
+
 	var l []{{modelName}}
-	qs = qs.OrderBy(sortFields...)
-	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
+	qs = qs.OrderBy(sortFields...).RelatedSel()
+	if _, err := qs.Limit(limit, offset).All(&l, fields...); err == nil {
+		var list []interface{}
 		if len(fields) == 0 {
 			for _, v := range l {
-				ml = append(ml, v)
+				list = append(list, v)
 			}
 		} else {
 			// trim unused fields
@@ -1073,12 +1081,77 @@ func GetAll{{modelName}}(query map[string]string, fields []string, sortby []stri
 				for _, fname := range fields {
 					m[fname] = val.FieldByName(fname).Interface()
 				}
-				ml = append(ml, m)
+				list = append(list, m)
 			}
 		}
-		return ml, nil
+		result["List"] = list
+		return result, nil
+	}else {
+		return nil, err
 	}
-	return nil, err
+}
+
+// GetAll{{modelName}} retrieves all {{modelName}} matches certain condition. Returns empty list if
+// no records exist
+func GetAll{{modelName}}(query map[string]string,sortby []string, order []string) (list []{{modelName}},err error) {
+	o := orm.NewOrm()
+	qs := o.QueryTable(new({{modelName}}))
+	// query k=v
+	for k, v := range query {
+		// rewrite dot-notation to Object__Attribute
+		k = strings.Replace(k, ".", "__", -1)
+		if strings.Contains(k, "isnull") {
+			qs = qs.Filter(k, (v == "true" || v == "1"))
+		} else {
+			qs = qs.Filter(k, v)
+		}
+	}
+	// order by:
+	var sortFields []string
+	if len(sortby) != 0 {
+		if len(sortby) == len(order) {
+			// 1) for each sort field, there is an associated order
+			for i, v := range sortby {
+				orderby := ""
+				if order[i] == "desc" {
+					orderby = "-" + v
+				} else if order[i] == "asc" {
+					orderby = v
+				} else {
+					return nil, errors.New("Error: Invalid order. Must be either [asc|desc]")
+				}
+				sortFields = append(sortFields, orderby)
+			}
+			qs = qs.OrderBy(sortFields...)
+		} else if len(sortby) != len(order) && len(order) == 1 {
+			// 2) there is exactly one order, all the sorted fields will be sorted by this order
+			for _, v := range sortby {
+				orderby := ""
+				if order[0] == "desc" {
+					orderby = "-" + v
+				} else if order[0] == "asc" {
+					orderby = v
+				} else {
+					return nil, errors.New("Error: Invalid order. Must be either [asc|desc]")
+				}
+				sortFields = append(sortFields, orderby)
+			}
+		} else if len(sortby) != len(order) && len(order) != 1 {
+			return nil, errors.New("Error: 'sortby', 'order' sizes mismatch or 'order' size is not 1")
+		}
+	} else {
+		if len(order) != 0 {
+			return nil, errors.New("Error: unused 'order' fields")
+		}
+	}
+
+	qs = qs.OrderBy(sortFields...).RelatedSel()
+
+	if _, err = qs.All(&list); err == nil {
+		return list, nil
+	} else {
+		return nil, err
+	}
 }
 
 // Update{{modelName}} updates {{modelName}} by Id and returns error if
@@ -1132,7 +1205,7 @@ type {{ctrlName}}Controller struct {
 func (c *{{ctrlName}}Controller) URLMapping() {
 	c.Mapping("Post", c.Post)
 	c.Mapping("GetOne", c.GetOne)
-	c.Mapping("GetAll", c.GetAll)
+	c.Mapping("GetAllByPage", c.GetAllByPage)
 	c.Mapping("Put", c.Put)
 	c.Mapping("Delete", c.Delete)
 }
@@ -1178,8 +1251,8 @@ func (c *{{ctrlName}}Controller) GetOne() {
 	c.ServeJSON()
 }
 
-// GetAll ...
-// @Title Get All
+// GetAllByPage ...
+// @Title Get All By Page
 // @Description get {{ctrlName}}
 // @Param	query	query	string	false	"Filter. e.g. col1:v1,col2:v2 ..."
 // @Param	fields	query	string	false	"Fields returned. e.g. col1,col2 ..."
@@ -1190,7 +1263,7 @@ func (c *{{ctrlName}}Controller) GetOne() {
 // @Success 200 {object} models.{{ctrlName}}
 // @Failure 403
 // @router / [get]
-func (c *{{ctrlName}}Controller) GetAll() {
+func (c *{{ctrlName}}Controller) GetAllByPage() {
 	var fields []string
 	var sortby []string
 	var order []string
@@ -1232,7 +1305,7 @@ func (c *{{ctrlName}}Controller) GetAll() {
 		}
 	}
 
-	l, err := models.GetAll{{ctrlName}}(query, fields, sortby, order, offset, limit)
+	l, err := models.GetAll{{ctrlName}}ByPage(query, fields, sortby, order, offset, limit)
 	if err != nil {
 		c.Data["json"] = err.Error()
 	} else {

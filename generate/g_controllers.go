@@ -90,7 +90,7 @@ type {{controllerName}}Controller struct {
 func (c *{{controllerName}}Controller) URLMapping() {
 	c.Mapping("Post", c.Post)
 	c.Mapping("GetOne", c.GetOne)
-	c.Mapping("GetAll", c.GetAll)
+	c.Mapping("GetAllByPage", c.GetAllByPage)
 	c.Mapping("Put", c.Put)
 	c.Mapping("Delete", c.Delete)
 }
@@ -117,8 +117,8 @@ func (c *{{controllerName}}Controller) GetOne() {
 
 }
 
-// GetAll ...
-// @Title GetAll
+// GetAllByPage ...
+// @Title GetAllByPage
 // @Description get {{controllerName}}
 // @Param	query	query	string	false	"Filter. e.g. col1:v1,col2:v2 ..."
 // @Param	fields	query	string	false	"Fields returned. e.g. col1,col2 ..."
@@ -129,7 +129,7 @@ func (c *{{controllerName}}Controller) GetOne() {
 // @Success 200 {object} models.{{controllerName}}
 // @Failure 403
 // @router / [get]
-func (c *{{controllerName}}Controller) GetAll() {
+func (c *{{controllerName}}Controller) GetAllByPage() {
 
 }
 
@@ -178,7 +178,7 @@ type {{controllerName}}Controller struct {
 func (c *{{controllerName}}Controller) URLMapping() {
 	c.Mapping("Post", c.Post)
 	c.Mapping("GetOne", c.GetOne)
-	c.Mapping("GetAll", c.GetAll)
+	c.Mapping("GetAllByPage", c.GetAllByPage)
 	c.Mapping("Put", c.Put)
 	c.Mapping("Delete", c.Delete)
 }
@@ -221,8 +221,8 @@ func (c *{{controllerName}}Controller) GetOne() {
 	c.ServeJSON()
 }
 
-// GetAll ...
-// @Title Get All
+// GetAllByPage ...
+// @Title Get All By Page
 // @Description get {{controllerName}}
 // @Param	query	query	string	false	"Filter. e.g. col1:v1,col2:v2 ..."
 // @Param	fields	query	string	false	"Fields returned. e.g. col1,col2 ..."
@@ -233,7 +233,7 @@ func (c *{{controllerName}}Controller) GetOne() {
 // @Success 200 {object} models.{{controllerName}}
 // @Failure 403
 // @router / [get]
-func (c *{{controllerName}}Controller) GetAll() {
+func (c *{{controllerName}}Controller) GetAllByPage() {
 	var fields []string
 	var sortby []string
 	var order []string
@@ -275,7 +275,7 @@ func (c *{{controllerName}}Controller) GetAll() {
 		}
 	}
 
-	l, err := models.GetAll{{controllerName}}(query, fields, sortby, order, offset, limit)
+	l, err := models.GetAll{{controllerName}}ByPage(query, fields, sortby, order, offset, limit)
 	if err != nil {
 		c.Data["json"] = err.Error()
 	} else {
