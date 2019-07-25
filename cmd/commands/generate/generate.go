@@ -22,7 +22,7 @@ import (
 	"github.com/ranqiwu/bee/config"
 	"github.com/ranqiwu/bee/generate"
 	"github.com/ranqiwu/bee/generate/swaggergen"
-	"github.com/ranqiwu/bee/logger"
+	beeLogger "github.com/ranqiwu/bee/logger"
 	"github.com/ranqiwu/bee/utils"
 )
 

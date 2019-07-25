@@ -32,7 +32,7 @@ import (
 	"strings"
 	"unicode"
 
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	beeLogger "github.com/ranqiwu/bee/logger"
 	bu "github.com/ranqiwu/bee/utils"
@@ -119,12 +119,12 @@ func ParsePackagesFromDir(dirpath string) {
 			// all 'tests' folders and dot folders wihin dirpath
 			d, _ := filepath.Rel(dirpath, fpath)
 			if !(d == "vendor" || strings.HasPrefix(d, "vendor"+string(os.PathSeparator))) &&
-				!strings.Contains(fpath, "tests") &&
+				!strings.Contains(d, "tests") &&
 				!(d[0] == '.') {
 				err = parsePackageFromDir(fpath)
 				if err != nil {
 					// Send the error to through the channel and continue walking
-					c <- fmt.Errorf("Error while parsing directory: %s", err.Error())
+					c <- fmt.Errorf("error while parsing directory: %s", err.Error())
 					return nil
 				}
 			}
@@ -158,12 +158,10 @@ func parsePackageFromDir(path string) error {
 // GenerateDocs generates documentations for a given path.
 func GenerateDocs(curpath string) {
 	fset := token.NewFileSet()
-
 	f, err := parser.ParseFile(fset, filepath.Join(curpath, "routers", "router.go"), nil, parser.ParseComments)
 	if err != nil {
 		beeLogger.Log.Fatalf("Error while parsing router.go: %s", err)
 	}
-
 	rootapi.Infos = swagger.Information{}
 	rootapi.SwaggerVersion = "2.0"
 
@@ -257,6 +255,7 @@ func GenerateDocs(curpath string) {
 			}
 		}
 	}
+
 	// Analyse controller package
 	for _, im := range f.Imports {
 		localName := ""
@@ -418,7 +417,6 @@ func analyseNSInclude(baseurl string, ce *ast.CallExpr) string {
 	return cname
 }
 
-//
 func trimGithubPrefix(fullpath string) string {
 	return strings.Join(strings.Split(fullpath, "/")[3:], "/")
 }
@@ -438,11 +436,18 @@ func analyseControllerPkg(vendorPath, localName, pkgpath string) {
 		importlist[pps[len(pps)-1]] = pkgpath
 	}
 	gopaths := bu.GetGOPATHs()
+	if len(gopaths) == 0 {
+		beeLogger.Log.Fatal("GOPATH environment variable is not set or empty")
+	}
+
 	pkgRealpath := ""
-	wg, _ := filepath.EvalSymlinks(filepath.Join(vendorPath, pkgpath))
-	wd, _ := os.Getwd()
+	currpath, _ := os.Getwd()
+	wg := filepath.Join(currpath, filepath.Base(pkgpath))
+	wg1, _ := filepath.EvalSymlinks(filepath.Join(vendorPath, pkgpath))
 	if utils.FileExists(wg) {
 		pkgRealpath = wg
+	} else if utils.FileExists(wg1) {
+		pkgRealpath = wg1
 	} else {
 		wgopath := gopaths
 		for _, wg := range wgopath {
@@ -450,13 +455,6 @@ func analyseControllerPkg(vendorPath, localName, pkgpath string) {
 			if utils.FileExists(wg) {
 				pkgRealpath = wg
 				break
-			} else {
-				trimmed := trimGithubPrefix(pkgpath)
-				wg, _ = filepath.EvalSymlinks(filepath.Join(wd, trimmed))
-				if utils.FileExists(wg) {
-					pkgRealpath = wg
-					break
-				}
 			}
 		}
 	}
@@ -550,7 +548,7 @@ func parserComments(f *ast.FuncDecl, controllerName, pkgpath string) error {
 	//TODO: resultMap := buildParamMap(f.Type.Results)
 	if comments != nil && comments.List != nil {
 		for _, c := range comments.List {
-			t := strings.TrimSpace(strings.TrimLeft(c.Text, "//"))
+			t := strings.TrimSpace(strings.TrimPrefix(c.Text, "//"))
 			if strings.HasPrefix(t, "@router") {
 				elements := strings.TrimSpace(t[len("@router"):])
 				e1 := strings.SplitN(elements, " ", 2)
@@ -800,10 +798,21 @@ func setParamType(para *swagger.Parameter, typ string, pkgpath, controllerName s
 	if typ == "string" || typ == "number" || typ == "integer" || typ == "boolean" ||
 		typ == astTypeArray || typ == "file" {
 		paraType = typ
+		if para.In == "body" {
+			para.Schema = &swagger.Schema{
+				Type: paraType,
+			}
+		}
 	} else if sType, ok := basicTypes[typ]; ok {
 		typeFormat := strings.Split(sType, ":")
 		paraType = typeFormat[0]
 		paraFormat = typeFormat[1]
+		if para.In == "body" {
+			para.Schema = &swagger.Schema{
+				Type:   paraType,
+				Format: paraFormat,
+			}
+		}
 	} else {
 		m, mod, realTypes := getModel(typ)
 		para.Schema = &swagger.Schema{

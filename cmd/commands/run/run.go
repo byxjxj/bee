@@ -109,7 +109,6 @@ func RunApp(cmd *commands.Command, args []string) int {
 			}
 		}
 	} else {
-		beeLogger.Log.Warn("Running application outside of GOPATH")
 		appname = path.Base(appPath)
 		currentGoPath = appPath
 	}
