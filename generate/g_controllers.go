@@ -296,8 +296,12 @@ func (c *{{controllerName}}Controller) Put() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.ParseInt(idStr, 0, 64)
 	v := models.{{controllerName}}{Id: id}
-	json.Unmarshal(c.Ctx.Input.RequestBody, &v)
-	if err := models.Update{{controllerName}}ById(&v); err == nil {
+	v, err := models.Get{{controllerName}}ById(id)
+	if err != nil {
+		c.CustomAbort(400, "Unknown Id")
+	}
+	json.Unmarshal(c.Ctx.Input.RequestBody, v)
+	if err := models.Update{{controllerName}}ById(v); err == nil {
 		c.Data["json"] = "OK"
 	} else {
 		c.Data["json"] = err.Error()

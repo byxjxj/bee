@@ -1325,9 +1325,12 @@ func (c *{{ctrlName}}Controller) GetAllByPage() {
 func (c *{{ctrlName}}Controller) Put() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, _ := strconv.Atoi(idStr)
-	v := models.{{ctrlName}}{Id: id}
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &v); err == nil {
-		if err := models.Update{{ctrlName}}ById(&v); err == nil {
+	v, err := models.Get{{ctrlName}}ById(id)
+	if err != nil {
+		c.CustomAbort(400, "Unknown Id")
+	}
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, v); err == nil {
+		if err := models.Update{{ctrlName}}ById(v); err == nil {
 			c.Data["json"] = "OK"
 		} else {
 			c.Data["json"] = err.Error()
